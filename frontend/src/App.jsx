@@ -1,62 +1,18 @@
-import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext.jsx';
 import Login from './Login.jsx';
 import Signup from './Signup.jsx';
 import UserDashboard from './UserDashboard.jsx';
+import CoursesDashboard from './CoursesDashboard.jsx';
+import CourseDetail from './CourseDetail.jsx';
+import StudyPage from './StudyPage.jsx';
+import ProtectedRoute from './ProtectedRoute.jsx';
 import './App.css';
 
 function App() {
-  const [authView, setAuthView] = useState('login');
-  const [user, setUser] = useState(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const { isAuthenticated, loading } = useAuth();
 
-  useEffect(() => {
-    const verifyAuth = async () => {
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        setUser(null);
-        setCheckingAuth(false);
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          localStorage.removeItem('token');
-          setUser(null);
-          return;
-        }
-
-        setUser(data.user);
-      } catch (error) {
-        localStorage.removeItem('token');
-        setUser(null);
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
-
-    verifyAuth();
-  }, []);
-
-  const handleAuthSuccess = (authenticatedUser) => {
-    setUser(authenticatedUser);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    setAuthView('login');
-  };
-
-  if (checkingAuth) {
+  if (loading) {
     return (
       <main className="app">
         <p>Checking authentication...</p>
@@ -64,28 +20,58 @@ function App() {
     );
   }
 
-  // Only authenticated users can see the dashboard
-  if (user) {
-    return (
-      <main className="app app-dashboard">
-        <UserDashboard user={user} onLogout={handleLogout} />
-      </main>
-    );
-  }
-
   return (
-    <main className="app">
-      {authView === 'signup' ? (
-        <Signup
-          onSignupSuccess={handleAuthSuccess}
-          onSwitchToLogin={() => setAuthView('login')}
+    <main className={`app ${isAuthenticated ? 'app-dashboard' : ''}`}>
+      <Routes>
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
         />
-      ) : (
-        <Login
-          onLoginSuccess={handleAuthSuccess}
-          onSwitchToSignup={() => setAuthView('signup')}
+        <Route
+          path="/signup"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Signup />}
         />
-      )}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <UserDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <CoursesDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses/:courseId"
+          element={
+            <ProtectedRoute>
+              <CourseDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/study"
+          element={
+            <ProtectedRoute>
+              <StudyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+        />
+        <Route
+          path="*"
+          element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+        />
+      </Routes>
     </main>
   );
 }

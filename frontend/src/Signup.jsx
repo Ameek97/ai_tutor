@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext.jsx';
 
-function Signup({ onSignupSuccess, onSwitchToLogin }) {
+function Signup() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,8 +32,8 @@ function Signup({ onSignupSuccess, onSwitchToLogin }) {
         return;
       }
 
-      localStorage.setItem('token', data.token);
-      onSignupSuccess(data.user);
+      login(data.user, data.token);
+      navigate('/dashboard');
     } catch (err) {
       setError('Unable to connect to the server');
     } finally {
@@ -82,10 +86,7 @@ function Signup({ onSignupSuccess, onSwitchToLogin }) {
       </form>
 
       <p className="auth-switch">
-        Already have an account?{' '}
-        <button type="button" className="link-button" onClick={onSwitchToLogin}>
-          Log in
-        </button>
+        Already have an account? <Link to="/login">Log in</Link>
       </p>
     </section>
   );

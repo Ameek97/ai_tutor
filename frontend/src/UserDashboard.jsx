@@ -1,4 +1,15 @@
-function UserDashboard({ user, onLogout }) {
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext.jsx';
+
+function UserDashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <section className="dashboard-card">
       <header className="dashboard-header">
@@ -6,7 +17,7 @@ function UserDashboard({ user, onLogout }) {
           <h1>User Dashboard</h1>
           <p className="auth-subtitle">You are signed in.</p>
         </div>
-        <button type="button" onClick={onLogout}>
+        <button type="button" onClick={handleLogout}>
           Log out
         </button>
       </header>
@@ -15,17 +26,23 @@ function UserDashboard({ user, onLogout }) {
         <h2>Your information</h2>
         <p>
           <span>Name</span>
-          {user.name}
+          {user?.name}
         </p>
         <p>
           <span>Email</span>
-          {user.email}
+          {user?.email}
         </p>
       </div>
 
-      <p className="dashboard-note">
-        Courses and Study will be added in the next steps.
-      </p>
+      <div className="dashboard-nav">
+        <h2>Navigate</h2>
+        <Link to="/courses" className="nav-link-button">
+          Courses
+        </Link>
+        <Link to="/study" className="nav-link-button secondary-button">
+          Study
+        </Link>
+      </div>
     </section>
   );
 }

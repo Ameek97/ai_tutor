@@ -29,6 +29,23 @@ const getCourses = async (req, res) => {
   }
 };
 
+const getCourseById = async (req, res) => {
+  try {
+    const course = await Course.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    return res.status(200).json({ course });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Server error fetching course' });
+  }
+};
+
 const deleteCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -52,5 +69,6 @@ const deleteCourse = async (req, res) => {
 module.exports = {
   createCourse,
   getCourses,
+  getCourseById,
   deleteCourse,
 };
