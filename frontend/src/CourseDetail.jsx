@@ -208,7 +208,8 @@ function CourseDetail() {
                 <li key={material._id} className="course-item">
                   <span className="material-name">{material.fileName}</span>
                   <div className="material-actions">
-                    {material.fileUrl ? (
+                    { material.fileUrl ? (
+                      
                       <a
                         href={material.fileUrl}
                         target="_blank"
@@ -222,6 +223,8 @@ function CourseDetail() {
                         Open
                       </button>
                     )}
+
+                    
                     <button
                       type="button"
                       className="danger-button"
