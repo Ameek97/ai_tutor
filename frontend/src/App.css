@@ -181,6 +181,12 @@
   margin-top: 0.5rem;
 }
 
+.course-detail-page .course-section + .course-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
 .course-section-header {
   display: flex;
   align-items: center;

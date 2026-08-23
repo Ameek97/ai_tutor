@@ -12,8 +12,8 @@ def get_topics(pdf_url):
     
     print("reached")
     try:
-        print("reached")
-        response = requests.get(pdf_url, timeout=30)
+        print("reached get topics")
+        response = requests.get(pdf_url, timeout=30) #similar to axios
         response.raise_for_status()
 
         with tempfile.NamedTemporaryFile(
@@ -23,6 +23,7 @@ def get_topics(pdf_url):
             tmp_file.write(response.content)
             tempPath = tmp_file.name
 
+        #load the documents 
         loader = PyPDFLoader(file_path=tempPath)
         docs = loader.load()
 
@@ -36,9 +37,9 @@ def get_topics(pdf_url):
 
         updated_pages = "\n\n".join(pages)
 
-        print("========== TEXT SENT TO LLM ==========")
-        print(updated_pages)
-        print("======================================")
+      
+       
+        print("pages sending from the llm ")
 
         return extract_topics(updated_pages)
 

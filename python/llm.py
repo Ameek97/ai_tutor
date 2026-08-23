@@ -6,42 +6,57 @@ from dotenv import load_dotenv
 load_dotenv()
 def extract_topics(text_content: str):
 
+    print("reached llm")
+
     client = OpenAI(
         api_key=os.getenv("API_KEY"),
         base_url=os.getenv("BASE_URL"),
     )
 
     system_prompt = """
-    You are an expert document structure analyzer.
+    You are an expert syllabus/curriculum analyzer.
 
-    Analyze the provided document text and identify its major topics.
+Analyze the provided syllabus text and identify its chapters (or units/modules)
+and the topics listed under each chapter.
 
-    For every topic:
-    1. Give it a concise and descriptive name.
-    2. Assign its sequential order starting from 1.
-    3. Identify the page where the topic begins.
-    4. Identify the last page containing content belonging to that topic.
+For every chapter:
+1. Give it a concise, descriptive name, exactly as it appears in the syllabus
+   (or lightly cleaned up if the original has numbering clutter, e.g. "Unit
+   3: Normalization" → "Normalization").
+2. Assign its sequential order starting from 1, in the order chapters appear
+   in the syllabus.
 
-    IMPORTANT:
-    - The document contains page markers such as [PAGE 1], [PAGE 2], etc.
-    - Use these page markers to determine start_page and end_page.
-    - Do not invent or estimate page numbers.
-    - Preserve the order in which topics appear in the document.
-    - Do not create duplicate topics.
-    - Focus on meaningful major topics rather than every small subsection.
+For every topic within a chapter:
+1. Give it a concise, descriptive name, exactly as it appears in the syllabus.
+2. Assign its sequential order starting from 1, restarting at 1 for each
+   new chapter (do not continue numbering across chapters).
 
-    Return the result as JSON in this format:
+IMPORTANT:
+- Preserve the order in which chapters and topics appear in the syllabus.
+- Do not invent chapters or topics that are not present in the text.
+- Do not create duplicate chapters or duplicate topics within the same chapter.
+- Do not include page numbers, IDs, or any fields other than name and order.
+- If a chapter has no clearly listed sub-topics, include it with an empty
+  topics array — do not fabricate topics to fill it.
+- Focus on the chapter/topic hierarchy as the syllabus presents it; do not
+  add a third level of nesting even if the syllabus has further sub-bullets —
+  fold those into the topic name or merge them into the nearest topic.
 
-    {
-        "topics": [
-            {
-                "name": "Topic name",
-                "order": 1,
-                "start_page": 1,
-                "end_page": 3
-            }
-        ]
-    }
+Return the result as JSON in this exact format, with no markdown formatting
+and no explanation text before or after:
+
+{
+    "chapters": [
+        {
+            "name": "Chapter name",
+            "order": 1,
+            "topics": [
+                { "name": "Topic name", "order": 1 },
+                { "name": "Topic name", "order": 2 }
+            ]
+        }
+    ]
+}
     """
 
     response = client.chat.completions.create(
@@ -57,6 +72,6 @@ def extract_topics(text_content: str):
 
     result = json.loads(raw_result)
 
-
+    print("returning the result from llm")
 
     return result
