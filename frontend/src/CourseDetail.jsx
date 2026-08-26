@@ -20,6 +20,10 @@ function CourseDetail() {
   const [uploadError, setUploadError] = useState('');
   const [uploadingSyllabus, setUploadingSyllabus] = useState(false);
   const [syllabusUploadError, setSyllabusUploadError] = useState('');
+  const [chapters, setChapters] = useState([]);
+  const [loadingChapters, setLoadingChapters] = useState(false);
+  const [chaptersError, setChaptersError] = useState('');
+  const [showChapters, setShowChapters] = useState(false);
 
   const getToken = () => localStorage.getItem('token');
 
@@ -125,6 +129,92 @@ function CourseDetail() {
       return;
     }
     syllabusFileInputRef.current?.click();
+  };
+
+  const handleViewSyllabus = async () => {
+    if (loadingChapters) {
+      return;
+    }
+
+    setChaptersError('');
+    setShowChapters(true);
+    setLoadingChapters(true);
+
+    try {
+      const response = await fetch(`/api/courses/${courseId}/syllabus`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setChapters([]);
+        setChaptersError(data.message || 'Failed to load syllabus');
+        return;
+      }
+
+      setChapters(
+        (data.chapters || []).map((chapter) => ({
+          ...chapter,
+          topics: (chapter.topics || []).map((topic) => ({
+            ...topic,
+            completed: topic.completed === true || topic.completed === 'true',
+          })),
+        }))
+      );
+    } catch (err) {
+      setChapters([]);
+      setChaptersError('Unable to connect to the server');
+    } finally {
+      setLoadingChapters(false);
+    }
+  };
+
+  const setTopicCompletedInState = (topicId, completed) => {
+    setChapters((prevChapters) =>
+      prevChapters.map((currentChapter) => ({
+        ...currentChapter,
+        topics: (currentChapter.topics || []).map((currentTopic) =>
+          currentTopic._id === topicId
+            ? {
+                ...currentTopic,
+                completed,
+              }
+            : currentTopic
+        ),
+      }))
+    );
+  };
+
+  const handleTopicToggle = async (topic) => {
+    const previousCompleted = topic.completed;
+    const newCompleted = !topic.completed;
+
+    setChaptersError('');
+    setTopicCompletedInState(topic._id, newCompleted);
+
+    try {
+      const response = await fetch(`/api/topics/${topic._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ completed: newCompleted }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setTopicCompletedInState(topic._id, previousCompleted);
+        setChaptersError(data.message || 'Failed to update topic');
+      }
+    } catch (err) {
+      setTopicCompletedInState(topic._id, previousCompleted);
+      setChaptersError('Unable to connect to the server');
+    }
   };
 
   const handleSyllabusFileChange = async (event) => {
@@ -266,9 +356,19 @@ function CourseDetail() {
         <section className="course-section">
           <div className="course-section-header">
             <h2>Syllabus</h2>
-            <button type="button" onClick={handleSyllabusUploadClick} disabled={uploadingSyllabus}>
-              {uploadingSyllabus ? 'Uploading...' : 'Upload Syllabus'}
-            </button>
+            <div className="course-section-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={handleViewSyllabus}
+                disabled={loadingChapters}
+              >
+                {loadingChapters ? 'Loading...' : 'View Syllabus'}
+              </button>
+              <button type="button" onClick={handleSyllabusUploadClick} disabled={uploadingSyllabus}>
+                {uploadingSyllabus ? 'Uploading...' : 'Upload Syllabus'}
+              </button>
+            </div>
             <input
               ref={syllabusFileInputRef}
               type="file"
@@ -311,6 +411,44 @@ function CourseDetail() {
                 </div>
               </li>
             </ul>
+          ) : null}
+
+          {chaptersError ? <p className="auth-error">{chaptersError}</p> : null}
+
+          {loadingChapters ? (
+            <p className="dashboard-note">Loading syllabus outline...</p>
+          ) : null}
+
+          {showChapters && !loadingChapters && !chaptersError && chapters.length === 0 ? (
+            <p className="dashboard-note">No chapters found for this course.</p>
+          ) : null}
+
+          {showChapters && !loadingChapters && chapters.length > 0 ? (
+            <div className="syllabus-outline">
+              {chapters.map((chapter) => (
+                <div key={chapter._id} className="syllabus-chapter">
+                  <h3>
+                    Chapter {chapter.order}: {chapter.name}
+                  </h3>
+                  <ul className="syllabus-topics">
+                    {(chapter.topics || []).map((topic) => (
+                      <li key={topic._id} className="syllabus-topic">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={topic.completed}
+                            onChange={() => {
+                              handleTopicToggle(topic);
+                            }}
+                          />
+                          {topic.name}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           ) : null}
         </section>
       ) : null}

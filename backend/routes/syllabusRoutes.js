@@ -30,4 +30,6 @@ router.post('/', (req, res, next) => {
 
 router.get('/:courseId', getSyllabusByCourse);
 
+
+
 module.exports = router;

@@ -16,6 +16,10 @@ class ExtractTopicsRequest(BaseModel):
     course_id: str
     pdf_url: str
 
+class uploadSmRequest(BaseModel):
+    user_id:str
+    course_id: str
+    pdf_url: str
 
 @app.get("/")
 def root():
@@ -44,6 +48,7 @@ def extract_topics_route(payload: ExtractTopicsRequest):
 
     except Exception as exc:
         print("ERROR:", exc)
+        
         raise HTTPException(
             status_code=500,
             detail=str(exc)
@@ -56,4 +61,24 @@ def extract_topics_route(payload: ExtractTopicsRequest):
         "document_id": payload.document_id,
         "course_id": payload.course_id,
         "topics": topics,
+    }
+
+
+@app.post("/upload-study-material")
+def upload_study_material(payload:uploadSmRequest):
+
+      try:
+        result = uploadMaterial(payload)
+
+
+      except Exception as err:
+          print("Error:",err)
+
+          raise HTTPException(
+              status_code=500
+              detail:str(exc)
+          ) from err
+
+      return {
+        result
     }

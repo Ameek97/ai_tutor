@@ -1,5 +1,7 @@
 const Course = require('../models/Course');
 const Syllabus = require('../models/Syllabus');
+const Chapter = require('../models/Chapter');
+const Topic = require('../models/Topic');
 const cloudinary = require('../config/cloudinary');
 const { extractTopicsFromSyllabus } = require('../services/extractTopicsService');
 
@@ -22,6 +24,37 @@ const uploadBufferToCloudinary = (fileBuffer, originalName) => {
 
     stream.end(fileBuffer);
   });
+};
+
+const getCourseSyllabus = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    if (course.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to access this course' });
+    }
+
+    const chapters = await Chapter.find({ courseId })
+      .sort({ order: 1 })
+      .populate({
+        path: 'topics',
+        options: { sort: { order: 1 } },
+      });
+
+     console.log(chapters) 
+
+    return res.status(200).json({ chapters });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || 'Server error fetching course syllabus',
+    });
+  }
 };
 
 const getSyllabusByCourse = async (req, res) => {
@@ -50,6 +83,9 @@ const getSyllabusByCourse = async (req, res) => {
     });
   }
 };
+
+
+
 
 const uploadSyllabus = async (req, res) => {
   try {
@@ -94,7 +130,50 @@ const uploadSyllabus = async (req, res) => {
       });
 
       console.log("FastAPI response:", JSON.stringify(extraction, null, 2));
-      return res.status(201).json({ syllabus, extraction });
+
+      try {
+        const data = extraction;
+        const savedChapters = [];
+        const savedTopics = [];
+
+        for (const chapter of data.topics.chapters) {
+          const savedChapter = await Chapter.create({
+            courseId: data.course_id,
+            name: chapter.name,
+            order: chapter.order,
+          });
+
+          savedChapters.push(savedChapter);
+
+          const topicDocs = chapter.topics.map((topic) => ({
+            courseId: data.course_id,
+            chapterId: savedChapter._id,
+            name: topic.name,
+            order: topic.order,
+            completed: false,
+          }));
+
+          if (topicDocs.length > 0) {
+            const insertedTopics = await Topic.insertMany(topicDocs);
+            savedTopics.push(...insertedTopics);
+          }
+        }
+
+        console.log("succesful") 
+        return res.status(201).json({
+          syllabus,
+          extraction,
+          chapters: savedChapters,
+          topics: savedTopics,
+        });
+      } catch (dbError) {
+        console.error(dbError);
+        return res.status(500).json({
+          message: dbError.message || 'Failed to save chapters and topics',
+          syllabus,
+          extraction,
+        });
+      }
     } catch (pythonError) {
       return res.status(502).json({
         message: pythonError.message || 'Failed to extract topics from syllabus',
@@ -109,6 +188,7 @@ const uploadSyllabus = async (req, res) => {
 };
 
 module.exports = {
+  getCourseSyllabus,
   getSyllabusByCourse,
   uploadSyllabus,
 };

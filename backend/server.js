@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const studyMaterialRoutes = require('./routes/studyMaterialRoutes');
 const syllabusRoutes = require('./routes/syllabusRoutes');
+const topicRoutes = require('./routes/topicRoutes');
 
 dns.setServers(["1.1.1.1","8.8.8.8"]);
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/study-materials', studyMaterialRoutes);
 app.use('/api/syllabi', syllabusRoutes);
+app.use('/api/topics', topicRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
