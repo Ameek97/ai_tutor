@@ -68,16 +68,16 @@ def extract_topics_route(payload: ExtractTopicsRequest):
 def upload_study_material(payload:uploadSmRequest):
 
       try:
-        result = uploadMaterial(payload)
+        result = uploadMaterial(payload.pdf_url)
 
 
       except Exception as err:
           print("Error:",err)
 
           raise HTTPException(
-              status_code=500
-              detail:str(exc)
-          ) from err
+        status_code=500,
+        detail="Internal server error"
+       ) from exc
 
       return {
         result
