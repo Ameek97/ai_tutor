@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from get_topics import get_topics
 from upload_study_material import upload_study_material
-from deleteCoure import deleteCourse
+from deleteCourse import deleteCourse
 from rq_client import que
 from worker import process_query
 
@@ -12,9 +12,11 @@ load_dotenv()
 
 app = FastAPI()
 
+
+
 class deleteCourseRequest(BaseModel):
-    course_id:str
     user_id:str
+    course_id:str
 
 class ExtractTopicsRequest(BaseModel):
     document_id: str
@@ -25,6 +27,11 @@ class uploadSmRequest(BaseModel):
     user_id:str
     course_id: str
     pdf_url: str
+
+class queryRequest(BaseModel):
+    user_id:str
+    course_id:str
+    query:str
 
 @app.get("/")
 def root():
@@ -96,11 +103,32 @@ def delCourse(payload:deleteCourseRequest):
     
 
     except Exception as err:
-                print("Error:",err)
+                print("Error found ---->:",err)
+                print(payload.user_id)
                 raise HTTPException(
                   status_code=500,
                   detail="Internal server error"
                  ) from err
+
+
+@app.post('/userQuery')
+def ans_Query(payload: queryRequest):
+
+
+  try:
+
+     result = ansQuery(payload)
+
+
+
+  except Exception as err:
+    print
+    raise HTTPException(
+        status_code=500,
+        detaiL="internal server error"
+    ) from err
+
+
 
 
     return result    

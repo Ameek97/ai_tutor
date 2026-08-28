@@ -5,7 +5,10 @@ client = QdrantClient(
 )
 
 
-def deleteCourse(course_id, user_id):
+def deleteCourse(payload):
+    course_id = payload.course_id
+    user_id = payload.user_id
+
     client.delete(
         collection_name="ai_tutor",
         points_selector=models.FilterSelector(
@@ -29,5 +32,6 @@ def deleteCourse(course_id, user_id):
     )
 
     return {
-        "status": "success"
+        "status": "success",
+        "message":"the content was deleted. "
     }

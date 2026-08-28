@@ -17,7 +17,7 @@ def extract_topics(text_content: str):
     You are an expert syllabus/curriculum analyzer.
 
 Analyze the provided syllabus text and identify its chapters (or units/modules)
-and the topics listed under each chapter.
+and the topics listed under each chapter.a
 
 For every chapter:
 1. Give it a concise, descriptive name, exactly as it appears in the syllabus

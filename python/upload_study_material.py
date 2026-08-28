@@ -1,5 +1,6 @@
 import os
 import tempfile
+from dotenv import load_dotenv
 
 import requests
 from langchain_community.document_loaders import PyPDFLoader
@@ -7,13 +8,16 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from fastapi.responses import JSONResponse
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 
+load_dotenv()
+print("GEMINI KEY LOADED:", bool(os.getenv("GEMINI_API_KEY")))
 def upload_study_material(payload):
     temp_path = None
 
     try:
-        print("reached get topics")
+        print("reached upload material")
 
         response = requests.get(payload.pdf_url, timeout=30)
         response.raise_for_status()
@@ -43,8 +47,11 @@ def upload_study_material(payload):
                 "user_id": payload.user_id
             })
 
-        embedding_model = OpenAIEmbeddings(
-            model="text-embedding-3-large"
+      
+
+        embedding_model = GoogleGenerativeAIEmbeddings(
+            model="gemini-embedding-001",
+            google_api_key=os.getenv("GEMINI_API_KEY")
         )
 
         QdrantVectorStore.from_documents(
@@ -59,7 +66,8 @@ def upload_study_material(payload):
         return JSONResponse(
             status_code=200,
             content={
-                "status": "success"
+                "status": "success",
+        "message":"the content was added. "
             }
 )
     except Exception as exc:
