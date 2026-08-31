@@ -5,7 +5,7 @@ import Signup from './Signup.jsx';
 import UserDashboard from './UserDashboard.jsx';
 import CoursesDashboard from './CoursesDashboard.jsx';
 import CourseDetail from './CourseDetail.jsx';
-import StudyPage from './StudyPage.jsx';
+import StudyPage from './Pages/StudyPage.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import './App.css';
 
