@@ -1,22 +1,15 @@
 import { useState } from 'react';
 
-function ChatTextbox({ onSendMessage }) {
+function ChatTextbox({ onSend }) {
   const [input, setInput] = useState('');
 
-  {/* if some message is sent, add it to the messages state */}
   const handleSend = () => {
-    onSendMessage({
-      role: 'user',
-      message: input,
-    });
+    onSend(input);
     setInput('');
   };
 
   return (
     <div className="chat-textbox">
-
-      {/* this is the textbox */}
-
       <input
         type="text"
         value={input}

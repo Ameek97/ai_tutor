@@ -14,8 +14,8 @@ print(os.getenv("GEMINI_API_KEY"))
 
 def ansQuery(payload):
     user_id = payload.user_id
-    course_id = payload.course.id
-    query = payload.query
+    course_id = payload.course_id
+    query = payload.messages[-1].message  # extracting the last message
 
     embedding_model = GoogleGenerativeAIEmbeddings(
             model="gemini-embedding-001",

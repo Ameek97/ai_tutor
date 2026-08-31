@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from get_topics import get_topics
 from upload_study_material import upload_study_material
 from deleteCourse import deleteCourse
+from ansQuery import ansQuery
 from rq_client import que
 from worker import process_query
 
@@ -18,6 +19,7 @@ class deleteCourseRequest(BaseModel):
     user_id:str
     course_id:str
 
+
 class ExtractTopicsRequest(BaseModel):
     document_id: str
     course_id: str
@@ -28,10 +30,15 @@ class uploadSmRequest(BaseModel):
     course_id: str
     pdf_url: str
 
-class queryRequest(BaseModel):
-    user_id:str
-    course_id:str
-    query:str
+
+class Message(BaseModel):
+    role: str
+    message: str
+
+class QueryRequest(BaseModel):
+    user_id: str
+    course_id: str
+    messages: list[Message]
 
 @app.get("/")
 def root():
@@ -112,7 +119,7 @@ def delCourse(payload:deleteCourseRequest):
 
 
 @app.post('/userQuery')
-def ans_Query(payload: queryRequest):
+def ans_Query(payload: QueryRequest):
 
 
   try:

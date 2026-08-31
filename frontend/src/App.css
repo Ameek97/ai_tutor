@@ -377,6 +377,26 @@
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  min-height: 8rem;
+}
+
+.chat-message {
+  max-width: 75%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  word-break: break-word;
+}
+
+.chat-message-user {
+  align-self: flex-end;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.chat-message-assistant {
+  align-self: flex-start;
+  background: #e5e7eb;
+  color: #111827;
 }
 
 .chat-textbox {

@@ -6,6 +6,7 @@ import UserDashboard from './UserDashboard.jsx';
 import CoursesDashboard from './CoursesDashboard.jsx';
 import CourseDetail from './CourseDetail.jsx';
 import StudyPage from './Pages/StudyPage.jsx';
+import StudyCourseSelect from './Pages/StudyCourseSelect.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import './App.css';
 
@@ -57,6 +58,14 @@ function App() {
         />
         <Route
           path="/study"
+          element={
+            <ProtectedRoute>
+              <StudyCourseSelect />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/study/:courseId"
           element={
             <ProtectedRoute>
               <StudyPage />
