@@ -34,7 +34,7 @@ const chat = async (req, res) => {
       }
     );
 
-    return res.status(200).json(response.data);
+    return res.status(200).json(response.data.answer);
   } catch (error) {
     if (error.response) {
       const detail = error.response.data?.detail || error.response.data?.message || error.message;

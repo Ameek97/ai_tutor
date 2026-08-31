@@ -13,6 +13,8 @@ load_dotenv()
 print(os.getenv("GEMINI_API_KEY"))
 
 def ansQuery(payload):
+
+    messages = payload.messages
     user_id = payload.user_id
     course_id = payload.course_id
     query = payload.messages[-1].message  # extracting the last message
@@ -49,7 +51,7 @@ def ansQuery(payload):
             ),
         )
 
-        result = queryAgent(related_text, query)
+        result = queryAgent(related_text, messages)
         return result 
 
 

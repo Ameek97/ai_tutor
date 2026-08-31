@@ -1,12 +1,11 @@
 from openai import OpenAI
-import json
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-def queryAgent(related_text, query: str):
+def queryAgent(related_text, messages):
 
     print("reached llm")
 
@@ -19,36 +18,52 @@ def queryAgent(related_text, query: str):
         doc.page_content for doc in related_text
     )
 
-    system_prompt = f"""
-Answer the user's question using the provided study material.
-If the answer is not present in the study material, say that the information
-is not available in the provided material.
+    system_prompt = """
+You are an AI tutor.
 
+Answer the student's question using the provided study material and conversation history.
 
+Use the study material as the primary source of truth. Do not invent or assume information that is not supported by the provided study material.
+
+Use the conversation history to understand the context of the student's question, including references to previous messages.
+
+If the answer cannot be determined from the provided study material, say that the information is not available in the provided material.
+
+Return only the answer to the student's question. Do not return JSON, labels, metadata, or explanations about your reasoning.
 """
-
-
 
     user_prompt = f"""
-      Study material: {text_content}
+Study material:
 
-    Student question: {query}
+{text_content}
 """
 
+    llm_messages = [
+        {
+            "role": "system",
+            "content": system_prompt
+        },
+        {
+            "role": "user",
+            "content": user_prompt
+        }
+    ]
+
+    llm_messages += [
+        {
+            "role": msg.role,
+            "content": msg.message
+        }
+        for msg in messages
+    ]
 
     response = client.chat.completions.create(
         model="gemini-3.5-flash-lite",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        response_format={"type": "json_object"}
+        messages=llm_messages
     )
 
     raw_result = response.choices[0].message.content
 
-    result = json.loads(raw_result)
-
     print("returning the result from llm")
 
-    return result
+    return raw_result

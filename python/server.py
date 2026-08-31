@@ -120,22 +120,19 @@ def delCourse(payload:deleteCourseRequest):
 
 @app.post('/userQuery')
 def ans_Query(payload: QueryRequest):
+    try:
+        result = ansQuery(payload)
+    except Exception as err:
+        print
+        raise HTTPException(
+            status_code=500,
+            detail="internal server error"
+        ) from err
 
+    if isinstance(result, dict) and "answer" in result:
+        return {"answer": result["answer"]}
 
-  try:
+    if isinstance(result, str):
+        return {"answer": result}
 
-     result = ansQuery(payload)
-
-
-
-  except Exception as err:
-    print
-    raise HTTPException(
-        status_code=500,
-        detaiL="internal server error"
-    ) from err
-
-
-
-
-    return result    
+    return {"answer": str(result)} 

@@ -49,7 +49,7 @@ function StudyPage() {
         ...prev,
         {
           role: 'assistant',
-          message: response.data.answer,
+          message: response.data,
         },
       ]);
     } catch (err) {
