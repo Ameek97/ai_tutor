@@ -42,6 +42,9 @@ function UserDashboard() {
         <Link to="/study" className="nav-link-button secondary-button">
           Study
         </Link>
+        <Link to="/quiz" className="nav-link-button secondary-button">
+          Quiz
+        </Link>
       </div>
     </section>
   );

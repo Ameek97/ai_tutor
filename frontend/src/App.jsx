@@ -5,6 +5,8 @@ import Signup from './Signup.jsx';
 import UserDashboard from './UserDashboard.jsx';
 import CoursesDashboard from './CoursesDashboard.jsx';
 import CourseDetail from './CourseDetail.jsx';
+import QuizPage from './components/quiz/QuizPage.jsx';
+import QuizCoursePage from './components/quiz/QuizCoursePage.jsx';
 import StudyPage from './Pages/StudyPage.jsx';
 import StudyCourseSelect from './Pages/StudyCourseSelect.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
@@ -53,6 +55,22 @@ function App() {
           element={
             <ProtectedRoute>
               <CourseDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz"
+          element={
+            <ProtectedRoute>
+              <QuizPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/:courseId"
+          element={
+            <ProtectedRoute>
+              <QuizCoursePage />
             </ProtectedRoute>
           }
         />
