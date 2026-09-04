@@ -1,3 +1,5 @@
+# Legacy local-PDF experiment. The live ingest/chat path is
+# upload_study_material.py → rag_store.py → ansQuery.py.
 from langchain_community.document_loaders import PyPDFLoader
 from pathlib import Path   #to easily tell path
 from langchain_text_splitters import RecursiveCharacterTextSplitter

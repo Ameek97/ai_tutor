@@ -4,6 +4,9 @@ function ChatTextbox({ onSend }) {
   const [input, setInput] = useState('');
 
   const handleSend = () => {
+    if (!input.trim()) {
+      return;
+    }
     onSend(input);
     setInput('');
   };

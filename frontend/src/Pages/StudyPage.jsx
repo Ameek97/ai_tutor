@@ -12,11 +12,14 @@ function StudyPage() {
 
   {/*  */} 
   const handleSendMessage = async (message) => {
-    
-    
+    const trimmedMessage = String(message || '').trim();
+    if (!trimmedMessage) {
+      return;
+    }
+
     const newMessage = {
       role: 'user',
-      message: message,
+      message: trimmedMessage,
     };
 
     {/* get the updated messages to send to backend */}
@@ -49,7 +52,7 @@ function StudyPage() {
         ...prev,
         {
           role: 'assistant',
-          message: response.data,
+          message: response.data.answer,
         },
       ]);
     } catch (err) {

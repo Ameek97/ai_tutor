@@ -1,31 +1,42 @@
+import logging
 import os
 import tempfile
-from dotenv import load_dotenv
 
 import requests
+from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-from langchain_qdrant import QdrantVectorStore
-from fastapi.responses import JSONResponse
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
+from rag_store import (
+    COLLECTION_NAME,
+    delete_points,
+    document_filter,
+    get_vector_store,
+)
 
 load_dotenv()
-print("GEMINI KEY LOADED:", bool(os.getenv("GEMINI_API_KEY")))
+
+logger = logging.getLogger("chat")
+
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 200
+
+
 def upload_study_material(payload):
     temp_path = None
 
     try:
-        print("reached upload material")
+        logger.info(
+            "[CHAT] Ingestion started collection=%s course_id=%s document_id=%s",
+            COLLECTION_NAME,
+            payload.course_id,
+            payload.document_id,
+        )
 
-        response = requests.get(payload.pdf_url, timeout=30)
+        response = requests.get(payload.pdf_url, timeout=60)
         response.raise_for_status()
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".pdf",
-            delete=False
-        ) as tmp_file:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
             tmp_file.write(response.content)
             temp_path = tmp_file.name
 
@@ -33,47 +44,80 @@ def upload_study_material(payload):
         docs = loader.load()
 
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=100,
-            chunk_overlap=0
+            chunk_size=CHUNK_SIZE,
+            chunk_overlap=CHUNK_OVERLAP,
         )
-
         texts = text_splitter.split_documents(docs)
 
-        # Add metadata to each chunk
-        # meta data is a fixed word from doc loader
         for text in texts:
-            text.metadata.update({
-                "course_id": payload.course_id,
-                "user_id": payload.user_id
-            })
+            text.metadata.update(
+                {
+                    "course_id": str(payload.course_id),
+                    "user_id": str(payload.user_id),
+                    "document_id": str(payload.document_id),
+                    "topic": text.metadata.get("topic", ""),
+                    "chapter": text.metadata.get("chapter", ""),
+                }
+            )
 
-      
-
-        embedding_model = GoogleGenerativeAIEmbeddings(
-            model="gemini-embedding-001",
-            google_api_key=os.getenv("GEMINI_API_KEY")
+        delete_points(
+            document_filter(
+                payload.user_id,
+                payload.course_id,
+                payload.document_id,
+            )
         )
 
-        QdrantVectorStore.from_documents(
-            texts,
-            embedding=embedding_model,
-            url="http://localhost:6333/",
-            prefer_grpc=True,
-            collection_name="my_documents",
-        )
-
-         
-        return JSONResponse(
-            status_code=200,
-            content={
+        if not texts:
+            logger.info("[CHAT] Ingestion produced no chunks")
+            return {
                 "status": "success",
-        "message":"the content was added. "
+                "message": "no text chunks were extracted from the document",
+                "chunks": 0,
+                "collection": COLLECTION_NAME,
             }
-)
-    except Exception as exc:
-        print(f"Error processing study material: {exc}")
-        raise
 
+        get_vector_store().add_documents(texts)
+
+        logger.info(
+            "[CHAT] Ingestion complete chunks=%s collection=%s",
+            len(texts),
+            COLLECTION_NAME,
+        )
+
+        return {
+            "status": "success",
+            "message": "the content was added.",
+            "chunks": len(texts),
+            "collection": COLLECTION_NAME,
+        }
+    except Exception as exc:
+        logger.exception("[CHAT] Ingestion failed: %s", type(exc).__name__)
+        raise
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
+
+
+def delete_study_material_vectors(payload):
+    delete_points(
+        document_filter(
+            payload.user_id,
+            payload.course_id,
+            payload.document_id,
+        )
+    )
+    return {
+        "status": "success",
+        "message": "document vectors were deleted.",
+        "collection": COLLECTION_NAME,
+    }
+
+
+def delete_course_vectors(payload):
+    delete_points(course_filter(payload.user_id, payload.course_id))
+    return {
+        "status": "success",
+        "message": "the content was deleted.",
+        "collection": COLLECTION_NAME,
+    }

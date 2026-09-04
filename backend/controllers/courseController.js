@@ -1,4 +1,5 @@
 const Course = require('../models/Course');
+const { pythonRequest } = require('../services/pythonService');
 
 const createCourse = async (req, res) => {
   try {
@@ -56,6 +57,23 @@ const deleteCourse = async (req, res) => {
 
     if (course.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to delete this course' });
+    }
+
+    try {
+      await pythonRequest({
+        method: 'delete',
+        path: '/delete-course',
+        data: {
+          user_id: req.user._id.toString(),
+          course_id: course._id.toString(),
+        },
+        timeout: 30000,
+      });
+    } catch (vectorError) {
+      console.error('[CHAT] Failed to delete course vectors');
+      return res.status(502).json({
+        message: 'Unable to remove course study index. The course was not deleted.',
+      });
     }
 
     await course.deleteOne();

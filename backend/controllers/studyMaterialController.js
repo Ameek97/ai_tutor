@@ -1,6 +1,9 @@
 const Course = require('../models/Course');
 const StudyMaterial = require('../models/StudyMaterial');
 const cloudinary = require('../config/cloudinary');
+const { pythonRequest } = require('../services/pythonService');
+
+const INGEST_TIMEOUT_MS = 180000;
 
 const uploadBufferToCloudinary = (fileBuffer, originalName) => {
   return new Promise((resolve, reject) => {
@@ -85,6 +88,28 @@ const uploadStudyMaterial = async (req, res) => {
       cloudinaryPublicId: cloudinaryResult.public_id,
     });
 
+    try {
+      await pythonRequest({
+        method: 'post',
+        path: '/upload-study-material',
+        data: {
+          user_id: req.user._id.toString(),
+          course_id: courseId.toString(),
+          document_id: studyMaterial._id.toString(),
+          pdf_url: studyMaterial.fileUrl,
+        },
+        timeout: INGEST_TIMEOUT_MS,
+      });
+    } catch (ingestError) {
+      const detail = ingestError.response?.data?.detail || ingestError.message;
+      console.error('[CHAT] Study material saved but ingestion failed');
+      return res.status(502).json({
+        message: 'File uploaded but indexing failed. The document was saved and can be retried.',
+        studyMaterial,
+        detail: typeof detail === 'string' ? detail : 'Unable to reach the AI service',
+      });
+    }
+
     return res.status(201).json({ studyMaterial });
   } catch (error) {
     return res.status(500).json({
@@ -103,6 +128,24 @@ const deleteStudyMaterial = async (req, res) => {
 
     if (studyMaterial.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to delete this study material' });
+    }
+
+    try {
+      await pythonRequest({
+        method: 'delete',
+        path: '/delete-document',
+        data: {
+          user_id: req.user._id.toString(),
+          course_id: studyMaterial.courseId.toString(),
+          document_id: studyMaterial._id.toString(),
+        },
+        timeout: 30000,
+      });
+    } catch (vectorError) {
+      console.error('[CHAT] Failed to delete document vectors');
+      return res.status(502).json({
+        message: 'Unable to remove indexed study material. The file was not deleted.',
+      });
     }
 
     if (studyMaterial.cloudinaryPublicId) {

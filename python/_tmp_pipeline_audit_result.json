@@ -1,0 +1,141 @@
+{
+  "env": {
+    "API_KEY": {
+      "present": true,
+      "non_empty": true
+    },
+    "BASE_URL": {
+      "present": true,
+      "non_empty": true
+    },
+    "GEMINI_API_KEY": {
+      "present": true,
+      "non_empty": true
+    }
+  },
+  "llm": {
+    "status": "PASS",
+    "model": "gemini-3.5-flash-lite",
+    "response_type": "str",
+    "response_length": 4,
+    "preview": "pong"
+  },
+  "embeddings": {
+    "status": "PASS",
+    "dimension": 3072,
+    "qdrant_expected": 3072,
+    "error": null
+  },
+  "qdrant": {
+    "status": "PASS",
+    "collections": {
+      "ai_tutor": {
+        "points": 0,
+        "dimension": 3072,
+        "status": "green"
+      },
+      "my_documents": {
+        "points": 72,
+        "dimension": 3072,
+        "status": "green"
+      }
+    },
+    "error": null
+  },
+  "retrieval": {
+    "status": "PASS",
+    "real_course": "6a7f...0f2b",
+    "real_user": "6a7a...e8b7",
+    "query": "What is HR Planning?",
+    "app_filter_count": 0,
+    "correct_filter_count": 3,
+    "wrong_course_count": 0,
+    "ai_tutor_count": 0,
+    "chunks": [
+      {
+        "score": 0.6967,
+        "preview": "Demand and Supply forecasting - Recruitment and Selection- Sources of recruitment - Tests and",
+        "course_id": "6a7f...0f2b",
+        "user_id": "6a7a...e8b7",
+        "metadata_keys": [
+          "_collection_name",
+          "_id",
+          "course_id",
+          "creationdate",
+          "creator",
+          "page",
+          "page_label",
+          "producer",
+          "source",
+          "total_pages",
+          "user_id"
+        ]
+      },
+      {
+        "score": 0.6967,
+        "preview": "Demand and Supply forecasting - Recruitment and Selection- Sources of recruitment - Tests and",
+        "course_id": "6a7f...0f2b",
+        "user_id": "6a7a...e8b7",
+        "metadata_keys": [
+          "_collection_name",
+          "_id",
+          "course_id",
+          "creationdate",
+          "creator",
+          "page",
+          "page_label",
+          "producer",
+          "source",
+          "total_pages",
+          "user_id"
+        ]
+      },
+      {
+        "score": 0.6967,
+        "preview": "Demand and Supply forecasting - Recruitment and Selection- Sources of recruitment - Tests and",
+        "course_id": "6a7f...0f2b",
+        "user_id": "6a7a...e8b7",
+        "metadata_keys": [
+          "_collection_name",
+          "_id",
+          "course_id",
+          "creationdate",
+          "creator",
+          "page",
+          "page_label",
+          "producer",
+          "source",
+          "total_pages",
+          "user_id"
+        ]
+      }
+    ],
+    "error": null
+  },
+  "rag": {
+    "grounded": {
+      "chunks": 3,
+      "answer_type": "str",
+      "answer_length": 96,
+      "empty": false,
+      "preview": "The provided study material does not contain a definition or explanation of what HR Planning is."
+    },
+    "unrelated": {
+      "chunks": 3,
+      "answer_length": 58,
+      "appears_to_refuse": true,
+      "preview": "The information is not available in the provided material."
+    },
+    "empty_retrieval": {
+      "answer_length": 100,
+      "appears_to_refuse": true,
+      "preview": "The provided study material does not contain the definition or explanation of normalization in DBMS."
+    }
+  },
+  "errors": {
+    "missing_api_key": "OpenAIError",
+    "invalid_llm_request": "NotFoundError",
+    "qdrant_unavailable": "ResponseHandlingException",
+    "invalid_embedding_key": "GoogleGenerativeAIError"
+  }
+}
