@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export const data = [
   {
@@ -64,6 +65,7 @@ function QuizPage() {
   const getToken = () => localStorage.getItem('token');
 
   useEffect(() => {
+
     const loadCourses = async () => {
       setError('');
       setLoading(true);
@@ -92,15 +94,36 @@ function QuizPage() {
       }
     };
 
+
     loadCourses();
   }, []);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedCourse) {
       return;
     }
 
-    navigate(`/quiz/${selectedCourse}`);
+    try {
+      const response = await axios.get(`/api/quiz/${selectedCourse}`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+
+      if (!response.data || response.data.quizData === undefined) {
+        setError('Failed to fetch quiz questions');
+        return;
+      }
+
+      localStorage.setItem(
+        'quizData',
+        JSON.stringify(response.data.quizData)
+      );
+      navigate(`/quiz/${selectedCourse}`);
+    } catch (err) {
+      console.log(err);
+      setError(err.response?.data?.message || 'Failed to fetch quiz questions');
+    }
   };
 
   return (
@@ -126,8 +149,10 @@ function QuizPage() {
           <p className="dashboard-note">No courses yet. Create a course first.</p>
         ) : null}
 
+  
         {!loading && courses.length > 0 ? (
           <ul className="courses-list">
+
             {courses.map((course) => (
               <li key={course._id}>
                 <button

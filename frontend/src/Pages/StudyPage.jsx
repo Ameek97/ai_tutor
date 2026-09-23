@@ -5,13 +5,15 @@ import ChatTextbox from '../Components/ChatTextbox.jsx';
 import MessageDisplay from '../Components/MessageDisplay.jsx';
 
 function StudyPage() {
+
   const { courseId } = useParams();
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
 
 
-  {/*  */} 
+  
   const handleSendMessage = async (message) => {
+
     const trimmedMessage = String(message || '').trim();
     if (!trimmedMessage) {
       return;
@@ -33,6 +35,8 @@ function StudyPage() {
     setError('');
 
 
+    
+    // send the message to backend and append the response to messages
     try {
       const response = await axios.post(
         '/api/study/chat',
@@ -40,6 +44,7 @@ function StudyPage() {
           course_id: courseId,
           messages: updatedMessages,
         },
+
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -59,6 +64,11 @@ function StudyPage() {
       setError(err.response?.data?.message || 'Unable to get a response');
     }
   };
+
+
+
+
+  
 
   return (
     <section className="dashboard-card">
