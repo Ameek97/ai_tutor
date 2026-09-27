@@ -5,7 +5,9 @@ function QuizCoursePage() {
   let quizData = [];
 
   try {
+    
     const parsed = JSON.parse(localStorage.getItem('quizData') || '[]');
+
     quizData = Array.isArray(parsed) ? parsed : [];
   } catch (err) {
     quizData = [];
@@ -57,6 +59,8 @@ function QuizCoursePage() {
     setIndex((prev) => prev + 1);
   };
 
+
+
   const handleSubmit = () => {
     let count = 0;
 
@@ -70,11 +74,15 @@ function QuizCoursePage() {
     setSubmitted(true);
   };
 
+
+
   useEffect(() => {
     if (!submitted) {
       return;
     }
 
+
+    // Highlight correct and incorrect answers
     quizData.forEach((resultQuestion, questionIndex) => {
       const userAnswer = answers[questionIndex];
       const correctAnswer = resultQuestion.correctAnswer;

@@ -14,7 +14,7 @@ def get_topics(pdf_url):
     try:
         print("reached get topics")
         response = requests.get(pdf_url, timeout=30) #similar to axios
-        response.raise_for_status()
+        response.raise_for_status() # checks the status and raises exception if needed 
 
         with tempfile.NamedTemporaryFile(
             suffix=".pdf",
