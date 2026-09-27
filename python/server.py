@@ -154,3 +154,11 @@ def getQuizqns(payload:QuizRequest):
         result = getQuizqns(payload)
 
     except Exception as err:
+          print("Error:",err)
+
+          raise HTTPException(
+        status_code=500,
+        detail="Internal server error"
+       ) from err
+
+    return result
