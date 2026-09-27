@@ -71,6 +71,11 @@ class deleteDocumentRequest(BaseModel):
         return validate_object_id(value, "document_id")
 
 
+class quizRequest(BaseModel):
+    course_id:str
+    user_id:str
+
+
 class ExtractTopicsRequest(BaseModel):
     document_id: str
     course_id: str
@@ -83,27 +88,6 @@ class uploadSmRequest(BaseModel):
     document_id: str
     pdf_url: str
 
-    @field_validator("user_id")
-    @classmethod
-    def validate_user_id(cls, value):
-        return validate_object_id(value, "user_id")
-
-    @field_validator("course_id")
-    @classmethod
-    def validate_course_id(cls, value):
-        return validate_object_id(value, "course_id")
-
-    @field_validator("document_id")
-    @classmethod
-    def validate_document_id(cls, value):
-        return validate_object_id(value, "document_id")
-
-    @field_validator("pdf_url")
-    @classmethod
-    def validate_pdf_url(cls, value):
-        if not (value or "").strip():
-            raise ValueError("pdf_url must not be empty")
-        return value.strip()
 
 
 class Message(BaseModel):
@@ -116,22 +100,7 @@ class QueryRequest(BaseModel):
     course_id: str
     messages: list[Message] = Field(min_length=1)
 
-    @field_validator("user_id")
-    @classmethod
-    def validate_user_id(cls, value):
-        return validate_object_id(value, "user_id")
-
-    @field_validator("course_id")
-    @classmethod
-    def validate_course_id(cls, value):
-        return validate_object_id(value, "course_id")
-
-    @model_validator(mode="after")
-    def validate_latest_message(self):
-        latest = self.messages[-1].message
-        if latest is None or not str(latest).strip():
-            raise ValueError("latest message must not be empty")
-        return self
+  
 
 
 @app.get("/")
@@ -236,3 +205,16 @@ def ans_Query(payload: QueryRequest):
         return {"answer": result}
 
     return {"answer": str(result)}
+
+
+@app.post("/quiz")
+def quizqn(payload: QuizRequest):
+    try:
+        pass
+
+
+    except Exception as exc:
+         raise HTTPException(
+             status_code=500,
+             detail= "internal server error"
+         )
