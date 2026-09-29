@@ -19,8 +19,10 @@ def upload_study_material(payload):
     try:
         print("reached upload material")
 
+    
         response = requests.get(payload.pdf_url, timeout=30)
         response.raise_for_status()
+
 
         with tempfile.NamedTemporaryFile(
             suffix=".pdf",
@@ -44,7 +46,8 @@ def upload_study_material(payload):
         for text in texts:
             text.metadata.update({
                 "course_id": payload.course_id,
-                "user_id": payload.user_id
+                "user_id": payload.user_id,
+            "document_id": payload.document_id
             })
 
       
@@ -59,7 +62,7 @@ def upload_study_material(payload):
             embedding=embedding_model,
             url="http://localhost:6333/",
             prefer_grpc=True,
-            collection_name="my_documents",
+            collection_name="ai_tutor",
         )
 
          
@@ -71,6 +74,7 @@ def upload_study_material(payload):
             }
 )
     except Exception as exc:
+        print(exc)
         print(f"Error processing study material: {exc}")
         raise
 

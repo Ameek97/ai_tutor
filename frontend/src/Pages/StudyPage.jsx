@@ -49,8 +49,7 @@ function StudyPage() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        }
-      );
+        });
 
 
       setMessages((prev) => [

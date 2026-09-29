@@ -30,7 +30,7 @@ class uploadSmRequest(BaseModel):
     user_id:str
     course_id: str
     pdf_url: str
-
+    document_id: str
 
 class Message(BaseModel):
     role: str
@@ -130,7 +130,7 @@ def ans_Query(payload: QueryRequest):
     try:
         result = ansQuery(payload)
     except Exception as err:
-        print
+        print(err)
         raise HTTPException(
             status_code=500,
             detail="internal server error"

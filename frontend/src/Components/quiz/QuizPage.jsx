@@ -108,6 +108,7 @@ function QuizPage() {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },
+
       });
 
       if (!response.data || response.data.quizData === undefined) {

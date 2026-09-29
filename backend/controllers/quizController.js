@@ -15,13 +15,10 @@ const getQuestions = async (req, res) => {
       : null;
 
     const response = await axios.get(
-      `${pythonServiceUrl.replace(/\/$/, '')}/${req.params.courseID}`,
+      `/http://0.0.0.0:8000/quiz/`,
       {
-        headers: token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : {},
+        course_id: req.params.courseId,
+        user_id: req.user.id,
       }
     );
 

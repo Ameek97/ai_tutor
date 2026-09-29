@@ -17,6 +17,7 @@ def queryAgent(related_text, messages):
     text_content = "\n\n".join(
         doc.page_content for doc in related_text
     )
+    print("text content is ", text_content)
 
     system_prompt = """
 You are an AI tutor.
@@ -36,8 +37,9 @@ Return only the answer to the student's question. Do not return JSON, labels, me
 Study material:
 
 {text_content}
-"""
 
+Context:
+"""
     llm_messages = [
         {
             "role": "system",

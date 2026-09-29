@@ -36,21 +36,22 @@ def ansQuery(payload):
     try:
         related_text = vector_store.similarity_search(
             query=query,
-            k=3,
             filter=models.Filter(
                 must=[
                     models.FieldCondition(
-                        key="courseId",
+                        key="metadata.course_id",
                         match=models.MatchValue(value=course_id),
                     ),
                     models.FieldCondition(
-                        key="userId",
+                        key="metadata.user_id",
                         match=models.MatchValue(value=user_id),
                     ),
                 ]
             ),
         )
 
+        print( " i want related text" )
+        print(related_text)
         result = queryAgent(related_text, messages)
         return result 
 
