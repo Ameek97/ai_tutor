@@ -36,7 +36,7 @@ function StudyPage() {
 
 
     
-    // send the message to backend and append the response to messages
+    /* send the message to backend and append the response to messages */
     try {
       const response = await axios.post(
         '/api/study/chat',

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 function QuizCoursePage() {
   let quizData = [];
@@ -14,17 +15,17 @@ function QuizCoursePage() {
   }
 
   const { courseId } = useParams(); {/* the params assosiated with the route of this element/function which is QuizCoursePage */}
-  const [index, setIndex] = useState(0); // track of the current question index
+  const [index, setIndex] = useState(0); /* track of the current question index */
 
-  const [answers, setAnswers] = useState(Array(quizData.length).fill(null)); // ans marked by user for each question
+  const [answers, setAnswers] = useState(Array(quizData.length).fill(null)); /* ans marked by user for each question */
   const [submitted, setSubmitted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const optionRefs = useRef(
     Array.from({ length: quizData.length }, () => [null, null, null, null])
   );
 
-  const isFirstQuestion = (index === 0); // boolean value, for blurring out prev button
-  const isLastQuestion = (index === quizData.length - 1); // boolean value, for blurring out next button
+  const isFirstQuestion = (index === 0); /* boolean value, for blurring out prev button */
+  const isLastQuestion = (index === quizData.length - 1); /* boolean value, for blurring out next button */
 
   const setOptionRef = (questionIndex, optionIndex) => (element) => {
     if (!optionRefs.current[questionIndex]) {
@@ -33,17 +34,18 @@ function QuizCoursePage() {
     optionRefs.current[questionIndex][optionIndex] = element;
   };
 
-  // user marked an option 
+   
+  {/* user marked an option */} 
   const handleSelectOption = (optionNumber) => {
 
     setAnswers( (prev) => {
       const updated = [...prev];
-      updated[index] = optionNumber;  // set the marked option for this current index(question)
+      updated[index] = optionNumber;  /* set the marked option for this current index(question) */
       return updated;
     });
   };
-
-  // move to prev qn
+     
+    {/* move to prev qn */} 
   const handlePrevious = () => {
     if (isFirstQuestion) {
       return;}
@@ -51,7 +53,7 @@ function QuizCoursePage() {
     setIndex((prev) => prev - 1);
   };
 
-  // move to next qn 
+  /* move to next qn */
   const handleNext = () => {
     if (isLastQuestion) {
       return;
@@ -61,8 +63,12 @@ function QuizCoursePage() {
 
 
 
-  const handleSubmit = () => {
+
+  const handleSubmit =  async() => {
     let count = 0;
+    
+   
+    
 
     quizData.forEach( (quizQuestion, questionIndex) => {
       if (answers[questionIndex] === quizQuestion.correctAnswer) {
@@ -72,6 +78,11 @@ function QuizCoursePage() {
 
     setCorrectCount(count);
     setSubmitted(true);
+    
+     const result = await axios.post('https::/localhost',{
+           quizData,
+            answers,
+        });
   };
 
 
@@ -81,8 +92,8 @@ function QuizCoursePage() {
       return;
     }
 
-
-    // Highlight correct and incorrect answers
+  {/** */} 
+  {/* Highlight correct and incorrect answers */}  
     quizData.forEach((resultQuestion, questionIndex) => {
       const userAnswer = answers[questionIndex];
       const correctAnswer = resultQuestion.correctAnswer;
@@ -152,7 +163,7 @@ function QuizCoursePage() {
       {submitted === false ? (
         <>
 
-      // quiz question
+      {/* quiz question */}
       <div className="quiz-question">
         <h2>
           Question {index + 1}
@@ -161,7 +172,7 @@ function QuizCoursePage() {
 
 
 
-       // quiz option 1
+      {/* quiz option 1 */}
         <div className="quiz-options">
           <button
             type="button"
@@ -176,7 +187,7 @@ function QuizCoursePage() {
           </button>
 
 
-        // quiz option 2
+        {/* quiz option 2 */}
           <button
             type="button"
             className={
@@ -221,7 +232,7 @@ function QuizCoursePage() {
           type="button"
           className="secondary-button"
           onClick={handlePrevious}
-          disabled={isFirstQuestion} // is disable = true, button wont be clickable
+          disabled={isFirstQuestion} /* is disable = true, button wont be clickable */
         >
           previous
         </button>
@@ -269,6 +280,7 @@ function QuizCoursePage() {
                 >
                   {resultQuestion.options[1]}
                 </button>
+                
                 <button
                   type="button"
                   className="quiz-option"
