@@ -22,9 +22,10 @@ def getQuizQns(payload):
         url="http://localhost:6333",
     )
 
-    user_id = payload.user_id
-    doc_id = payload.doc_id
     topics = payload.topics
+    user_id = payload.user_id
+    course_id = payload.course_id
+    doc_id = payload.doc_id
 
     query = ", ".join(topics)
 
@@ -34,12 +35,16 @@ def getQuizQns(payload):
             filter=models.Filter(
                 must=[
                     models.FieldCondition(
-                        key="course_id",
-                        match=models.MatchValue(value=doc_id),
+                        key="metadata.course_id",
+                        match=models.MatchValue(value=course_id),
                     ),
                     models.FieldCondition(
-                        key="user_id",
+                        key="metadata.user_id",
                         match=models.MatchValue(value=user_id),
+                    ),
+                    models.FieldCondition(
+                        key="metadata.document_id",
+                        match=models.MatchValue(value=doc_id),
                     ),
                 ]
             ),

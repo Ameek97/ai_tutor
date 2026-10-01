@@ -2,7 +2,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import json
-from pydantic import baseModel
+from pydantic import BaseModel
 
 
     

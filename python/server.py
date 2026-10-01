@@ -151,7 +151,7 @@ def ans_Query(payload: QueryRequest):
 
 
 
-@app.get("/quiz")
+@app.post("/quiz")
 def getQzqns(payload:QuizRequest):
     try:
         result = getQuizQns(payload)
@@ -164,4 +164,7 @@ def getQzqns(payload:QuizRequest):
         detail="Internal server error"
        ) from err
 
-    return result
+    if isinstance(result, dict) and "quizData" in result:
+        return result
+
+    return {"quizData": result}

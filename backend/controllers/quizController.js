@@ -1,28 +1,44 @@
-const axios = require('axios');
+const StudyMaterial = require('../models/StudyMaterial');
+const { pythonRequest } = require('../services/pythonService');
+
+const topics = [
+  'Normalization',
+  'Functional Dependencies',
+  'ER Model',
+  'Relational Algebra',
+  'Transactions',
+];
 
 const getQuestions = async (req, res) => {
   try {
-    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL;
+    const studyMaterial = await StudyMaterial.findOne({
+      userId: req.user.id,
+      courseId: req.params.courseID,
+    }).sort({ createdAt: -1 });
 
-    if (!pythonServiceUrl) {
-      return res.status(500).json({
-        message: 'PYTHON_SERVICE_URL is missing from environment variables',
+    if (!studyMaterial) {
+      return res.status(404).json({
+        message: 'No study material found for this course',
       });
     }
 
-    const token = req.headers.authorization
-      ? req.headers.authorization.split(' ')[1]
-      : null;
+    const response = await pythonRequest({
+      method: 'post',
+      path: '/quiz',
+      data: {
+        user_id: req.user.id,
+        course_id: req.params.courseID,
+        topics,
+        doc_id: studyMaterial._id.toString(),
+      },
+      timeout: 180000,
+    });
 
-const response = await axios.get(
-  `http:/0.0.0.0:8000/quiz`,
-  {
-    course_id: req.params.courseID,
-    user_id: req.user.id,
-  }
-);
+    const quizData = Array.isArray(response.data)
+      ? response.data
+      : response.data.quizData;
 
-    return res.json({ quizData: response.data.quizData });
+    return res.json({ quizData });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: 'Failed to fetch quiz questions' });
