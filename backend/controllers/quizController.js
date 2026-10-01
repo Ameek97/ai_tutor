@@ -14,13 +14,13 @@ const getQuestions = async (req, res) => {
       ? req.headers.authorization.split(' ')[1]
       : null;
 
-    const response = await axios.get(
-      `/http://0.0.0.0:8000/quiz/`,
-      {
-        course_id: req.params.courseId,
-        user_id: req.user.id,
-      }
-    );
+const response = await axios.get(
+  `http:/0.0.0.0:8000/quiz`,
+  {
+    course_id: req.params.courseID,
+    user_id: req.user.id,
+  }
+);
 
     return res.json({ quizData: response.data.quizData });
   } catch (err) {

@@ -1,16 +1,28 @@
-from langchain_qdrant import QdrantVectorStore
-from qdrant_client.http import models
+import os
 
-vector_store = QdrantVectorStore.from_existing_collection(
-    embedding=embeddings,
-    collection_name="my_documents",
-    url="http://localhost:6333",
-)
+from fastapi import HTTPException
+from dotenv import load_dotenv
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_qdrant import QdrantVectorStore
+from qdrant_client import models
+from Components.Quiz.quizllm import quizQnLLM
+
+
 
 
 def getQuizQns(payload):
+    embedding_model = GoogleGenerativeAIEmbeddings(
+        model="gemini-embedding-001",
+        google_api_key=os.getenv("GEMINI_API_KEY"),
+    )
 
-    user_id = payload.userid
+    vector_store = QdrantVectorStore.from_existing_collection(
+        embedding=embedding_model,
+        collection_name="ai_tutor",
+        url="http://localhost:6333",
+    )
+
+    user_id = payload.user_id
     doc_id = payload.doc_id
     topics = payload.topics
 
@@ -22,11 +34,11 @@ def getQuizQns(payload):
             filter=models.Filter(
                 must=[
                     models.FieldCondition(
-                        key="courseId",
+                        key="course_id",
                         match=models.MatchValue(value=doc_id),
                     ),
                     models.FieldCondition(
-                        key="userId",
+                        key="user_id",
                         match=models.MatchValue(value=user_id),
                     ),
                 ]

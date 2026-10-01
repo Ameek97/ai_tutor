@@ -1,10 +1,12 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+import json
+from pydantic import baseModel
 
+
+    
 load_dotenv()
-
-
 def quizQnLLM(topics, related_text):
 
     print("reached llm")
@@ -73,4 +75,4 @@ Rules:
 
     raw_result = response.choices[0].message.content
 
-    return raw_result
+    return json.loads(raw_result)

@@ -8,6 +8,7 @@ from deleteCourse import deleteCourse
 from ansQuery import ansQuery
 from rq_client import que
 from worker import process_query
+from Components.Quiz.getqns import getQuizQns
 
 
 load_dotenv()
@@ -44,6 +45,8 @@ class QueryRequest(BaseModel):
 class QuizRequest(BaseModel):
     user_id: str
     course_id: str
+    topics: list[str]
+    doc_id: str
 
 
 
@@ -148,11 +151,11 @@ def ans_Query(payload: QueryRequest):
 
 
 
-@app.post("/quiz")
-def getQuizqns(payload:QuizRequest):
+@app.get("/quiz")
+def getQzqns(payload:QuizRequest):
     try:
-        result = getQuizqns(payload)
-
+        result = getQuizQns(payload)
+        
     except Exception as err:
           print("Error:",err)
 
