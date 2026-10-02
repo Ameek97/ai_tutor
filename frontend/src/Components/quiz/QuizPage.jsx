@@ -61,6 +61,7 @@ function QuizPage() {
   const [selectedCourse, setSelectedCourse] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [quizAttempts, setQuizAttempts] = useState([]);
 
   const getToken = () => localStorage.getItem('token');
 
@@ -95,7 +96,22 @@ function QuizPage() {
     };
 
 
+    const loadQuizAttempts = async () => {
+      try {
+        const response = await axios.get('/api/quiz/attempts', {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+
+        setQuizAttempts(response.data);
+      } catch (err) {
+        setQuizAttempts([]);
+      }
+    };
+
     loadCourses();
+    loadQuizAttempts();
   }, []);
 
   const handleContinue = async () => {

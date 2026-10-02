@@ -2,30 +2,34 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 
-function QuizCoursePage() {
-  let quizData = [];
-
+function loadLocalQuizData() {
   try {
-    
     const parsed = JSON.parse(localStorage.getItem('quizData') || '[]');
-
-    quizData = Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch (err) {
-    quizData = [];
+    return [];
   }
+}
 
-  const { courseId } = useParams(); {/* the params assosiated with the route of this element/function which is QuizCoursePage */}
-  const [index, setIndex] = useState(0); /* track of the current question index */
+function QuizCoursePage() {
+  const { courseId, attemptId } = useParams();
+  const getToken = () => localStorage.getItem('token');
 
-  const [answers, setAnswers] = useState(Array(quizData.length).fill(null)); /* ans marked by user for each question */
-  const [submitted, setSubmitted] = useState(false);
+  const [quizData, setQuizData] = useState(() => (attemptId ? [] : loadLocalQuizData()));
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState(() =>
+    attemptId ? [] : Array(loadLocalQuizData().length).fill(null)
+  );
+  const [submitted, setSubmitted] = useState(Boolean(attemptId));
   const [correctCount, setCorrectCount] = useState(0);
+  const [loadingAttempt, setLoadingAttempt] = useState(Boolean(attemptId));
+  const [pageError, setPageError] = useState('');
   const optionRefs = useRef(
     Array.from({ length: quizData.length }, () => [null, null, null, null])
   );
 
-  const isFirstQuestion = (index === 0); /* boolean value, for blurring out prev button */
-  const isLastQuestion = (index === quizData.length - 1); /* boolean value, for blurring out next button */
+  const isFirstQuestion = (index === 0);
+  const isLastQuestion = (index === quizData.length - 1);
 
   const setOptionRef = (questionIndex, optionIndex) => (element) => {
     if (!optionRefs.current[questionIndex]) {
@@ -33,6 +37,43 @@ function QuizCoursePage() {
     }
     optionRefs.current[questionIndex][optionIndex] = element;
   };
+
+  useEffect(() => {
+    if (!attemptId) {
+      return;
+    }
+
+    const loadAttempt = async () => {
+      setPageError('');
+      setLoadingAttempt(true);
+
+      try {
+        const response = await axios.get(`/api/quiz/attempt/${attemptId}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+
+        const attempt = response.data.attempt;
+
+        if (!attempt || !Array.isArray(attempt.quizData)) {
+          setPageError('Failed to load quiz attempt');
+          return;
+        }
+
+        setQuizData(attempt.quizData);
+        setAnswers(Array.isArray(attempt.answers) ? attempt.answers : []);
+        setCorrectCount(attempt.score);
+        setSubmitted(true);
+      } catch (err) {
+        setPageError(err.response?.data?.message || 'Failed to load quiz attempt');
+      } finally {
+        setLoadingAttempt(false);
+      }
+    };
+
+    loadAttempt();
+  }, [attemptId]);
 
    
   {/* user marked an option */} 
@@ -64,25 +105,28 @@ function QuizCoursePage() {
 
 
 
-  const handleSubmit =  async() => {
-    let count = 0;
-    
-   
-    
+  const handleSubmit = async () => {
+    setPageError('');
 
-    quizData.forEach( (quizQuestion, questionIndex) => {
-      if (answers[questionIndex] === quizQuestion.correctAnswer) {
-        count++;
-      }
-    });
+    try {
+      const response = await axios.post(
+        `/api/quiz/attempt/${courseId}`,
+        {
+          quizData,
+          answers,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
 
-    setCorrectCount(count);
-    setSubmitted(true);
-    
-     const result = await axios.post('https::/localhost',{
-           quizData,
-            answers,
-        });
+      setCorrectCount(response.data.score);
+      setSubmitted(true);
+    } catch (err) {
+      setPageError(err.response?.data?.message || 'Failed to save quiz attempt');
+    }
   };
 
 
@@ -118,7 +162,41 @@ function QuizCoursePage() {
         }
       }
     });
-  }, [submitted, answers] );
+  }, [submitted, answers, quizData] );
+
+  if (loadingAttempt) {
+    return (
+      <section className="dashboard-card">
+        <header className="dashboard-header">
+          <div>
+            <h1>Quiz</h1>
+            <p className="auth-subtitle">Loading saved result...</p>
+          </div>
+          <Link to="/quiz/history" className="secondary-button nav-link-button">
+            Back to Quiz History
+          </Link>
+        </header>
+        <p className="dashboard-note">Loading attempts...</p>
+      </section>
+    );
+  }
+
+  if (pageError && attemptId) {
+    return (
+      <section className="dashboard-card">
+        <header className="dashboard-header">
+          <div>
+            <h1>Quiz</h1>
+            <p className="auth-subtitle">Saved result</p>
+          </div>
+          <Link to="/quiz/history" className="secondary-button nav-link-button">
+            Back to Quiz History
+          </Link>
+        </header>
+        <p className="auth-error">{pageError}</p>
+      </section>
+    );
+  }
 
   if (!quizData.length) {
     return (
@@ -155,10 +233,12 @@ function QuizCoursePage() {
           </p>
         </div>
 
-        <Link to="/quiz" className="secondary-button nav-link-button">
-          Back to Course Select
+        <Link to={attemptId ? '/quiz/history' : '/quiz'} className="secondary-button nav-link-button">
+          {attemptId ? 'Back to Quiz History' : 'Back to Course Select'}
         </Link>
       </header>
+
+      {pageError && !attemptId ? <p className="auth-error">{pageError}</p> : null}
 
       {submitted === false ? (
         <>

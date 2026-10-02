@@ -6,6 +6,7 @@ import UserDashboard from './UserDashboard.jsx';
 import CoursesDashboard from './CoursesDashboard.jsx';
 import CourseDetail from './CourseDetail.jsx';
 import QuizPage from './Components/quiz/QuizPage.jsx';
+import QuizHistory from './Components/quiz/QuizHistory.jsx';
 import QuizCoursePage from './Components/quiz/QuizCoursePage.jsx';
 import StudyPage from './Pages/StudyPage.jsx';
 import StudyCourseSelect from './Pages/StudyCourseSelect.jsx';
@@ -63,6 +64,22 @@ function App() {
           element={
             <ProtectedRoute>
               <QuizPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/history"
+          element={
+            <ProtectedRoute>
+              <QuizHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/attempt/:attemptId"
+          element={
+            <ProtectedRoute>
+              <QuizCoursePage />
             </ProtectedRoute>
           }
         />
