@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
-import ChatTextbox from '../Components/ChatTextbox.jsx';
-import MessageDisplay from '../Components/MessageDisplay.jsx';
+import ChatTextbox from '../../Components/ChatTextbox.jsx';
+import MessageDisplay from '../../Components/MessageDisplay.jsx';
 
 function StudyPage() {
 

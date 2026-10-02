@@ -8,8 +8,9 @@ import CourseDetail from './CourseDetail.jsx';
 import QuizPage from './Components/quiz/QuizPage.jsx';
 import QuizHistory from './Components/quiz/QuizHistory.jsx';
 import QuizCoursePage from './Components/quiz/QuizCoursePage.jsx';
-import StudyPage from './Pages/StudyPage.jsx';
-import StudyCourseSelect from './Pages/StudyCourseSelect.jsx';
+import StudyPage from './Pages/Study/StudyPage.jsx';
+import StudyCourseSelect from './Pages/Study/StudyCourseSelect.jsx';
+import NotesPage from './Pages/Notes/NotesPage.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import './App.css';
 
@@ -108,13 +109,26 @@ function App() {
           }
         />
         <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <NotesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/"
           element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
         />
+
+
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
         />
+
+      
+      
       </Routes>
     </main>
   );
